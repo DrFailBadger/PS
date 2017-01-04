@@ -1,0 +1,21 @@
+
+
+Function ExpandAppV5{
+
+    Param(  
+     
+            [ValidateScript({(Test-Path $_) -and ((Get-Item $_).Extension -eq ".appv")})]  
+            [Parameter(,Mandatory=$True)]  
+            [string]$AppVPackagePath  
+
+        )
+
+Expand-AppvSequencerPackage -AppvPackagePath $AppVPackagePath 
+
+}
+
+
+
+
+
+"C:\Program Files\Repackager\Repack.exe" -app "C:\packages\install.cmd" -o "c:\packages\dave2" -ms -mode single -pv 1.0 -pp productname -pc companyname -b -build -sb
