@@ -12,10 +12,9 @@ Function Remove-AppV4DependantOS{
     Get-ChildItem $path -Recurse -Include '*.osd' |
     foreach {
         [Xml]$xml = Get-Content $_.FullName
-        $item = Select-XML -Xml $xml -XPath '//SOFTPKG/IMPLEMENTATION/OS'
-        $null = $item.Node.ParentNode.RemoveChild($item.Node)
-        $xml.Save($_.FullName)
-    }
+        $xml.SelectNodes('//SOFTPKG/IMPLEMENTATION/OS') |  % {$_.ParentNode.RemoveChild($_)}    
+        $xml.Save($_.FullName) 
+    } 
 }
 
 Function Get-AppV4ShortcutDetails{
