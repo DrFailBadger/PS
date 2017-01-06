@@ -3,11 +3,11 @@
 import-module AppvClient
 $path = 'C:\Packages'
 
-$Path2 = dir $path -Recurse | where {$_.Extension -eq '.appv'}
+dir $path -Recurse -Include "*.Appv" |
 
-foreach ( $item in $path2  ){
+foreach {
 
-Add-AppvClientPackage -path $item.FullName | Publish-AppvClientPackage -Global
+Add-AppvClientPackage -path $_.FullName | Publish-AppvClientPackage -Global
 
 }
 
