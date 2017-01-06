@@ -8,6 +8,21 @@ Get-Process | gm
 
 Get-Process | 
 
+help Get-Service -full
+Get-Service -name s* | where status -eq running ## move filtering to earliest possible
+
+get-aduser -filter * | Where { $_.displayname -like 'don' } # bad as has a filter in first command
+Get-aduser -filter 
+
+help get-aduser -full #filter and examples
+
+##version 4.0 filtering
+
+Get-Service | where {$_.Status -eq 'running'  } ##clipboard it
+
+(Get-Service).where ({$_.Status -eq 'running'}) #doesnt seem to work
+$PSVersionTable
+
 help Stop-Process -full
 
 Get-Process | Stop-Process -WhatIf

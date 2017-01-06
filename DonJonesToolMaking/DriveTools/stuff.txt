@@ -1,0 +1,18 @@
+﻿
+<#
+
+Contact on Twitter: @concentratedDon
+
+Blog (where Sample code will go): DonJones.com
+
+Q&A: Forums on PowerShell.org
+Also free eBooks, videos, you name it
+
+PowerShellSummit.org - PowerShell + DevOps Global Summit
+April 9-10-11-12 in Bellevue, WA; Reg opens 1-Nov-2016.
+
+"Secrets of PowerShell Remoting" (low-level JEA coverage)
+
+#>
+
+Remove-Item $ErroLogFile -ErrorAction "SilentlyContinue"
