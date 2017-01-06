@@ -20,7 +20,7 @@ help get-aduser -full #filter and examples
 
 Get-Service | where {$_.Status -eq 'running'  } ##clipboard it
 
-(Get-Service).where ({$_.Status -eq 'running'}) #doesnt seem to work
+#(Get-Service).where ({$_.Status -eq 'running'}) #doesnt seem to work
 $PSVersionTable
 
 help Stop-Process -full

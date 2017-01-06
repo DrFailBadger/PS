@@ -111,7 +111,7 @@ True
 
 False
 
--not # replaces operater ## changes false to true etc.
+#-not # replaces operater ## changes false to true etc.
 
 Get-Alias
 
