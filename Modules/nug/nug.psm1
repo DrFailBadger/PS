@@ -1,4 +1,7 @@
-﻿Function get-SysInfo {
+﻿$ExampleDriveTypePreference = 'Local'
+
+
+Function get-SysInfo {
     Param(
         [Parameter(Mandatory=$true,
                    ValueFromPipeline=$true,
@@ -84,25 +87,69 @@ function set-computerState {
 
     Process {
         foreach ($computer in $computername){
-
-            If (Test-Connection -ComputerName -$computer -Quiet){
-                $works =$true
-                Try {
-                    Get-WmiObject -Class Win32_Bios -ErrorAction Stop -ComputerName $computer
-                } Catch {
-                    $works = $false
+                If (Check $computer) {
+                    $os =Get-WmiObject -ComputerName $computer -Class Win32_OperatingSystem
+                    if ($Logoff) { $arg = 0 }
+                    if ($Restart) { $arg = 2 }
+                    if ($Shutdown) { $arg = 1 }
+                    if ($Poweroff) { $arg = 8 }
+                    if ($Force) { $Arg += 4 }
+                    $os.Win32Shutdown($Arg)
                 }
-            }
-
-            If ($works) {
-                $os =Get-WmiObject -ComputerName $computer -Class Win32_OperatingSystem
-                if ($Logoff) { $arg = 0 }
-                if ($Restart) { $arg = 2 }
-                if ($Shutdown) { $arg = 1 }
-                if ($Poweroff) { $arg = 8 }
-                if ($Force) { $Arg += 4 }
-                $os.Win32Shutdown($Arg)
-            }
         }
     }
 }
+
+
+function get-DiskSpaceInfo {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true,
+                   Position=1,
+                   HelpMessage='Computername',
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [String[]]$computername,
+
+        [Parameter(Position=2)]
+        [ValidateSet('Floppy','Local','Optical')]
+        [String]$DriveType =  $ExampleDriveTypePreference
+    )
+    Begin{}
+    Process{
+        foreach ($computer in $computername) {
+            $params = @{ 'ComputerName' = $computer;
+                         'Class' = 'Win32_LogicalDisk' }
+            switch ($DriveType){
+                'Local' {$params.add('Filter','DriveType=3')}
+                'Floppy' {$params.add('Filter','DriveType=2')}
+                'Optical' {$params.add('Filter','DriveType=5')}
+                
+            }
+            Get-WmiObject @Params |
+            Select-Object @{n='Drive';e={$_.DeviceID}},
+                          @{n='Size';e={"{0:N2}" -f ($_.Size /1GB)}},
+                          @{n='FreeSpace';e={"{0:N2}" -f ($_.FreeSpace / 1Gb)}},
+                          @{n='FreePercent';e={"{0:N2}" -f ($_.FreeSpace / $_.Size *100)}},
+                          PSComputerName
+              
+        }              
+    }
+    End{}
+}
+
+
+function check($computer){
+    $works =$true
+    If(Test-Connection $computer -quiet){
+        try{
+            gwmi Win32_bios -ComputerName $computer -eq stop
+        } catch {
+            $works = $false
+        }
+    }
+    return $works
+
+}
+
+Export-ModuleMember -variable ExampleDriveTypePreference -Function get-DiskDetails, set-computerState
