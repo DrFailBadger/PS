@@ -13,8 +13,8 @@ $OutPutPath = 'C:\UAM\_MassConversion\'
 #$ShortcutTable = $ShortcutTable | Select-Object AppName, OSDName, ShortcutName, Target, Parameters
 
 
-Get-AppV4Variables -Path $path | Sort-Object -Property 'OSDName', 'variable name' -Unique | Select-Object -Property 'AppName', 'OSDName' , 'variable name', 'Variable Path'  | Export-NiceCSV -OutPutPath $OutPutPath -FileName "AppV4 Variables"
-Get-AppV4ShortcutDetails -Path $path | Select-Object AppName, OSDName, ShortcutName, Target, Parameters | Export-NiceCSV -OutPutPath $OutPutPath -FileName "AppV4 Shortcut Details" #-Verbose
-Get-AppV4FTAs -Path $Path | sort-Object -Property OSDName, FTA -Unique | Select-Object -Property 'AppName', 'OSDName', 'FTA'| Export-NiceCSV -OutPutPath $OutPutPath -FileName "AppV4 FTA"
-#Remove-AppV4DependantOS -Path $path
+Get-OSDs -path $Path | Get-AppV4Variables | Sort-Object -Property 'OSDName', 'variable name' -Unique | Export-NiceCSV -OutPutPath $OutPutPath -FileName "AppV4 Variables"
+Get-OSDs -path $Path | Get-AppV4ShortcutDetails | Export-NiceCSV -OutPutPath $OutPutPath -FileName "AppV4 Shortcut Details" #-Verbose
+Get-OSDs -path $Path | Get-AppV4FTAs | sort-Object -Property OSDName, FTA -Unique | Export-NiceCSV -OutPutPath $OutPutPath -FileName "AppV4 FTA"
+Get-OSDs -path $Path | Remove-AppV4DependantOS -Path $path
 
