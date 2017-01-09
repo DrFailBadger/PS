@@ -2,11 +2,11 @@ Pipeline
 Plan A Value
 Plan B PropertyName
 
-Get-Service [[-Name] <String[]>] #[[-Name] <String[]>]#square brackets around all = optional
-Get-Service -DisplayName <String[]> #no [] required parameter.
-Get-Service [[-Name] <String[]>] #[[-Name]# Brackets around Name = positional,dont need to use -name
-Get-Service [[-Name] <String[]>] #<String[]># <> accepts strings
-Get-Service [[-Name] <String[]>] #[]# multiple strings [Array]
+#Get-Service [[-Name] <String[]>] #[[-Name] <String[]>]#square brackets around all = optional
+#Get-Service -DisplayName <String[]> #no [] required parameter.
+#Get-Service [[-Name] <String[]>] #[[-Name]# Brackets around Name = positional,dont need to use -name
+#Get-Service [[-Name] <String[]>] #<String[]># <> accepts strings
+#Get-Service [[-Name] <String[]>] #[]# multiple strings [Array]
 ##Positional paramters are relative, first positinal parameter we had used
 -examples # switch parameters on or off
 
@@ -59,4 +59,6 @@ read as one string
 
 
 '@
-Select-object @n{n='computername';e={$.name}}
+
+#How to select objects.
+get-adcomputer -filter * | Select-object @n{n='computername';e={$.name}}

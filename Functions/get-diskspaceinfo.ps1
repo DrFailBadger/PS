@@ -3,11 +3,9 @@
     Param(
         [Parameter(Mandatory=$true,
                    Position=1,
-                   HelpMessage='Computername')]
-        [Alias('MachineName')]
-        [ValidateCount(1,3)]
-        #[ValidatePattern('\w+\.company\.pri')]
-        #[ValidateLength(1,40)]
+                   HelpMessage='Computername',
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
         [String[]]$computername,
 
         [Parameter(Position=2)]
