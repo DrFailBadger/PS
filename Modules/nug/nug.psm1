@@ -1,5 +1,5 @@
 ﻿$ExampleDriveTypePreference = 'Local'
-
+$ExampleErrorLogFile = 'c:\uam\errors.txt'
 
 Function get-SysInfo {
     Param(
@@ -33,35 +33,6 @@ Function get-SysInfo {
     End{}
 }
 
-Function get-DiskDetails {
-    Param(
-        [Parameter(Mandatory=$true,
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true)]
-        [String[]]$computername
-    )
-
-    Begin{}
-    Process{
-
-        foreach ($comp in $ComputerName) {
-            $Disks = Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType=3" -ComputerName $Comp
-            foreach ($disk in $disks){
-    
-                $props = [ordered]@{'ComputerName' =$Comp;
-                                    'Drive' = $disk.deviceid;
-                                    'FreeSpace' = "{0:N2}" -f ($disk.freespace /1GB);
-                                    'Size' = "{0:N2}" -f ($disk.size /1GB);
-                                    'FreePercent' = "{0:N2}" -f ($disk.freespace / $disk.size * 100)}
-                $obj = New-Object -TypeName psobject -Property $props
-                Write-Output $obj
-            }
-        }
-    }
-    End{}
-}
-
-
 function set-computerState {
     [CmdletBinding()]
     Param(
@@ -94,12 +65,17 @@ function set-computerState {
                     if ($Shutdown) { $arg = 1 }
                     if ($Poweroff) { $arg = 8 }
                     if ($Force) { $Arg += 4 }
-                    $os.Win32Shutdown($Arg)
+                    Try {
+                        $ErrorActionPreference = 'Stop'
+                        $os.Win32Shutdown($Arg)
+                        $ErrorActionPreference = 'Continue'
+                    } Catch {
+                        #whatever
+                    }
                 }
         }
     }
 }
-
 
 function get-DiskSpaceInfo {
     [CmdletBinding()]
@@ -113,9 +89,13 @@ function get-DiskSpaceInfo {
 
         [Parameter(Position=2)]
         [ValidateSet('Floppy','Local','Optical')]
-        [String]$DriveType =  $ExampleDriveTypePreference
+        [String]$DriveType =  $ExampleDriveTypePreference,
+
+        [String]$ErrorLogFile = $ExampleErrorLogFile
     )
-    Begin{}
+    Begin{
+        Remove-Item $ErrorLogFile -ErrorAction SilentlyContinue
+    }
     Process{
         foreach ($computer in $computername) {
             $params = @{ 'ComputerName' = $computer;
@@ -126,13 +106,17 @@ function get-DiskSpaceInfo {
                 'Optical' {$params.add('Filter','DriveType=5')}
                 
             }
-            Get-WmiObject @Params |
+            Try {
+            Get-WmiObject @Params -ErrorAction Stop -ErrorVariable myerr  |
             Select-Object @{n='Drive';e={$_.DeviceID}},
                           @{n='Size';e={"{0:N2}" -f ($_.Size /1GB)}},
                           @{n='FreeSpace';e={"{0:N2}" -f ($_.FreeSpace / 1Gb)}},
                           @{n='FreePercent';e={"{0:N2}" -f ($_.FreeSpace / $_.Size *100)}},
                           PSComputerName
-              
+            } Catch {
+                $computer | Out-File $ErrorLogFile -Append
+                Write-Verbose "Failed to connect to $computer; Error is $myerr"
+            } 
         }              
     }
     End{}
@@ -152,4 +136,4 @@ function check($computer){
 
 }
 
-Export-ModuleMember -variable ExampleDriveTypePreference -Function get-DiskDetails, set-computerState
+Export-ModuleMember -variable ExampleDriveTypePreference, ExampleErrorLogFile -Function get-DiskDetails, set-computerState
