@@ -107,12 +107,12 @@ function get-DiskSpaceInfo {
                 
             }
             Try {
-            Get-WmiObject @Params -ErrorAction Stop -ErrorVariable myerr  |
-            Select-Object @{n='Drive';e={$_.DeviceID}},
-                          @{n='Size';e={"{0:N2}" -f ($_.Size /1GB)}},
-                          @{n='FreeSpace';e={"{0:N2}" -f ($_.FreeSpace / 1Gb)}},
-                          @{n='FreePercent';e={"{0:N2}" -f ($_.FreeSpace / $_.Size *100)}},
-                          PSComputerName
+                Get-WmiObject @Params -ErrorAction Stop -ErrorVariable myerr  |
+                Select-Object @{n='Drive';e={$_.DeviceID}},
+                              @{n='Size';e={"{0:N2}" -f ($_.Size /1GB)}},
+                              @{n='FreeSpace';e={"{0:N2}" -f ($_.FreeSpace / 1Gb)}},
+                              @{n='FreePercent';e={"{0:N2}" -f ($_.FreeSpace / $_.Size *100)}},
+                              PSComputerName
             } Catch {
                 $computer | Out-File $ErrorLogFile -Append
                 Write-Verbose "Failed to connect to $computer; Error is $myerr"
