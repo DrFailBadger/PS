@@ -3,7 +3,7 @@ Param(
     [Parameter(Mandatory=$true)]
     [string]$ThalerENV,
     [Parameter(Mandatory=$False)]
-    [string]$PackageFolder= 'C:\Thaler',
+    [string]$PackageFolder= 'C:\Packages\Thaler',
     [Parameter(Mandatory=$True)]
     [string]$ServerAppData = '\\netappnsi01a\appvapps\appdata'
 )

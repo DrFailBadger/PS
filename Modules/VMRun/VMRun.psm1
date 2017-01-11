@@ -463,3 +463,108 @@ Function get-VMRunningProc {
     }
     END{}
 }
+
+Function Invoke-VMPSCommand {
+<#
+.DESCRIPTION
+Run a powershell command on a VM.
+Get-RunningVMs| Invoke-VMCommand -Command 'notepad.exe'
+Powershell commands will return variables set as the -PSReturnVariable '$Variableyouwantreturning'
+multiple variables can be returned -PSReturnVariable '$Variable1,$variable2'
+
+Powershell return requires Z: drive to be mapped in the virtual machine
+Require Powershell 3.0 on the target machine for powershell switch.
+.EXAMPLE
+Running a Command
+$DefaultVMUserName = "Packaging User"
+$DefaultVMPassword = "P4ckag!ng"
+$final = Get-RunningVMs |Invoke-VMCommand -Command '$return = Get-Process' -PSReturnVariable '$return' -Visible True
+$final will be the $return variable from the command ran on the machine
+.EXAMPLE
+Returning multiple Variables from a script block
+$DefaultVMUserName = "Packaging User"
+$DefaultVMPassword = "P4ckag!ng"
+$final = Get-RunningVMs |Invoke-VMCommand -Command '$return = Get-Process
+$return2 = Get-Service' -PSReturnVariable '$return,$return2' -Visible True
+$final[0] will be the $return variable from the command ran on the machine
+$final[1] will be the $return2 variable from the command ran on the machine
+#>
+
+
+    [CmdletBinding()]
+    Param(       
+                      
+        [Parameter(Mandatory=$False,
+                   ValueFromPipeline=$True,
+                   ValueFromPipelineByPropertyName=$True,
+                   HelpMessage = "Location of Running VM VMX file")]
+        [ValidateScript({(Test-Path $_) -and ((Get-Item $_).Extension -eq ".vmx")})] 
+        [Alias('Path')]
+        [String]$VMXpath = $DefaultVMXPath,
+
+        [Parameter(Mandatory=$False,
+                   HelpMessage = "User Name for Target VMX")]
+        [String]$VMUserName = $DefaultVMUserName,
+
+        [Parameter(Mandatory=$False,
+                   HelpMessage = "Password for Target VMX")]
+        [String]$VMPassword = $DefaultVMPassword,
+
+        [Parameter(Mandatory=$False,
+                   HelpMessage = "Powershell command")]
+        [String]$Command,
+
+        [Parameter(Mandatory=$False,
+                   HelpMessage = "Powershell command")]
+        [String]$PSReturnVariable = '$Return',
+
+        [Parameter(Mandatory=$False,
+                   HelpMessage = "See the command on the VM (Useful for error handling)")]
+        [ValidateSet('True','False')]
+        [String]$Visible = "True"
+    
+    )
+
+Begin{}
+Process{
+
+    If($VMUserName -eq ""){
+        Write-Error '-VMUserName or $DefaultVMUserName must be Set' -ErrorAction Stop
+    }
+    If($VMPassword -eq ""){
+    Write-Error '-VMPassword or $DefaultVMPassword must be Set' -ErrorAction Stop
+    }
+    If($VMXpath -eq ""){
+       Write-Error '-VMXpath or $DefaultVMXpath must be Set' -ErrorAction Stop
+    }
+
+    $HostPath = $ENV:Temp.Replace(":","")
+    MD "$ENV:Temp\VMRun" -ErrorAction SilentlyContinue
+    #$PSReturnVariable = '$return'
+    #$Command = '$return = Get-Process'
+  
+  IF($Command -ne $null){
+        $Runpath = "`"$env:windir\system32\windowspowershell\v1.0\PowerShell.exe`" -executionpolicy bypass -file `"Z:\$HostPath\VMRun\Input.PS1`""
+        $Command = "$PSReturnVariable = ''
+        $Command
+        IF($PSReturnVariable -ne ''){$PSReturnVariable|Export-Clixml 'Z:\$HostPath\VMRun\Return.XML'}
+        start-sleep 5
+        "
+        $Command | Out-File -FilePath "$ENV:Temp\VMRun\Input.PS1" -Encoding ascii -Force
+        
+        
+        }
+
+    IF($Visible -eq "True"){
+    & "${env:ProgramFiles(x86)}\VMware\VMware VIX\vmrun.exe" -gu "$VMUserName" -gp "$VMPassword" runProgramInGuest "$VMXpath" -interactive -activewindow $Runpath
+    }
+    else{& "${env:ProgramFiles(x86)}\VMware\VMware VIX\vmrun.exe" -gu "$VMUserName" -gp "$VMPassword" runProgramInGuest "$VMXpath" -interactive $Runpath}
+
+    $final = Import-Clixml "$ENV:Temp\VMRun\Return.XML" -ErrorAction SilentlyContinue
+    Del "$ENV:Temp\VMRun\Return.xml" -ErrorAction SilentlyContinue
+    Del "$ENV:Temp\VMRun\Input.PS1" -ErrorAction SilentlyContinue
+    Return $final
+
+}
+END{}
+}
