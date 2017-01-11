@@ -337,6 +337,7 @@ Foreach ($ThalerENV in $ThalerENVTXT){
         MD "$PackageLocation\Documents" -Force
         MD "$PackageLocation\Installation" -Force
         MD "$PackageLocation\Source" -Force
+        Start-Sleep 5
 
         Copy-VMFolder -VMXPath $VMXpath -From "$VMWorkingLocation\Thaler\Output.zip" -To "$PackageLocation\Installation" -CopySelection GuesttoHost
 
@@ -350,10 +351,6 @@ Foreach ($ThalerENV in $ThalerENVTXT){
 
 
     }
-
-
-
-
 
 }
 
