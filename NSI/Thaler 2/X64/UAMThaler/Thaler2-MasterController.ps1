@@ -28,7 +28,7 @@ $ServerAppData = "C:\packages\serverINIS"
 $VMWorkingLocation = "C:\packages"
 $ThalerENVTXT = Get-Content "$location\ENV.txt"
 $DefaultThalerResourcePath = "$ResourcePath"
-
+$ThalerVersion = '24019'
 
 
 
@@ -298,9 +298,9 @@ Function Create-ThalerDiscoDocs {
 
 Foreach ($ThalerENV in $ThalerENVTXT){
 
-    $Brickname = "Thaler-3103-AV5-$ThalerENV-63-R01-R01"
-    $PackageLocation = "$Location\Thaler-3103-AV5-$ThalerENV-63\R01-R01"
-    $program = '& "C:\Packages\thaler\Thaler2-Controller.ps1" -ThalerENV' + " $ThalerENV" + " -ServerAppData '$ServerAppData'"
+    $Brickname = "Thaler-$ThalerVersion-AV5-$ThalerENV-63-R01-R01"
+    $PackageLocation = "$Location\Thaler-$ThalerVersion-AV5-$ThalerENV-63\R01-R01"
+    $program = '& "C:\Packages\thaler\Thaler-' + "$ThalerVersion" + '-Controller.ps1" -ThalerENV' + " $ThalerENV" + " -ServerAppData '$ServerAppData'" + " -thalerversion '$ThalerVersion'"
    
     Start-VMSnapshots -Snapshots revertToSnapshot -SnapshotName "$Snapshotname" -VMXpath $VMXpath
 

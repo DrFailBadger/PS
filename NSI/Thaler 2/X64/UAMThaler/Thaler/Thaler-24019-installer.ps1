@@ -9,10 +9,6 @@ Param(
 )
 
 $packageFiles = "$PackageFolder\Files"
-#$ThalerENV  = "ZZZZZZ"
-#$ServerAppData = "\\netappnsi01a\appvapps\appdata"
-
-#$ThalerENV = (Get-ItemProperty -Path $registryPath -Name envreg -ErrorAction SilentlyContinue).envreg 
 
 #Creates Installation Directory
 $ThalerInstallDirectory = "${ENV:ProgramFiles(x86)}\Thaler\Thaler 2.40.19"
