@@ -1,8 +1,4 @@
-﻿$DefaultVMXPath = 'D:\Windows 7 x64\Windows 7 x64\Windows 7 x64.vmx'
-$DefaultVMUserName = 'Packaging'
-$DefaultVMPassword = 'P4ckag1ng'
-
-Function Start-VMSnapshots{
+﻿Function Start-VMSnapshots{
     [CmdletBinding()]
     Param(       
                        
@@ -566,33 +562,3 @@ Process{
 END{}
 }
 
-Function Enable-VMSharedFolder{
-    [CmdletBinding()]
-    Param(       
-                       
-        [Parameter(Mandatory=$True,
-                   HelpMessage = "Location of VMX file")]
-        #[ValidateScript({(Test-Path $_) -and ((Get-Item $_).Extension -eq ".vmx")})] 
-        #[Alias('Path')]
-        [String]$VMXPath = $DefaultVMXPath,
-
-       
-        [Parameter(Mandatory=$True)]
-        [String]$ShareName,
-
-        [Parameter(Mandatory=$True,
-                   ValueFromPipeline=$True,
-                   ValueFromPipelineByPropertyName=$True)]
-        [String]$pathtoHost
-
-    )
-
-    Process{
-        [string]$VMRunexe = "${env:ProgramFiles(x86)}\VMware\VMware Workstation\vmrun.exe"
-            
-        & $VMRunexe addSharedFolder $VMXpath "$ShareName" $pathtoHost
-    }
-    END{}
-}
-
-Export-ModuleMember -Variable DefaultVMXPath, DefaultVMPassword, DefaultVMUsername -Function *
