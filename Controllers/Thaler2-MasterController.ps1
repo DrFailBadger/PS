@@ -3,7 +3,7 @@
 $Location = "D:\GitPS\PS\NSI\Thaler 2\X64\UAMThaler"
 
 $VMXpath = "D:\Windows 7 x64\Windows 7 x64\Windows 7 x64.vmx"
-$Snapshotname = "Auto"
+$Snapshotname = "PSremoting Enabled"
 $DefaultVMUserName = "Packaging User"
 $DefaultVMPassword = "P4ckag!ng"
 
