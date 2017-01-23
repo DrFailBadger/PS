@@ -12,9 +12,9 @@ $DefaultVMXPath = "D:\Windows 7 x86 - Copy\Windows 7 x86\Windows 7 x32.vmx"
 $DefaultSnapShotName = "MCTNEW"
 $DefaultVMUserName = "Packaging User"
 $DefaultVMPassword = "P4ckag!ng"
-#$Powershell = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`""
+#$Program = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`""
 #$program1 = "-executionpolicy bypass -file `"C:\packages\vmscript.ps1`""
-$program = '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -file "C:\packages\vmscript.ps1"'
+#$program1 = '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -file "C:\packages\vmscript.ps1"'
 
 
 #Copy-VMFolder -From "C:\GIT\NSI\Expand\VMScript.ps1" -To "C:\Packages\"
@@ -30,8 +30,11 @@ Foreach($Zip in ($appvDir|Where-Object -Property "Extension" -eq ".zip")){
     Copy-VMFolder -From "$($Zip.FullName)" -To "C:\Packages\"
 
     Write-host "Running Powershell / Repackager"
+    $program1 = '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -file "C:\packages\vmscript.ps1"'
+    $Program = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`""
 
-    Invoke-VMProgram -ProgramtoRun $program 
+
+    Invoke-VMProgram -ProgramtoRun $program -ProgramtoRunParams $program1
            
     
     $process =$(get-VMRunningProc) |Where-object{($_ -split "cmd=")[1] -match "Repack.exe"}

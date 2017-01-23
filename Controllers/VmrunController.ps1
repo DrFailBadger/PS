@@ -1,14 +1,14 @@
 ﻿Import-Module vmrun
 
-$DefaultVMUserName = "Packaging User"
+$DefaultVMUserName = "Packaging"
 $DefaultVMPassword = "P4ckag!ng"
 
-$DefaultSnapShotName = "MCTNEW"
-$DefaultVMXPath = "D:\Windows 7 x86 - Copy\Windows 7 x86\Windows 7 x32.vmx"
+$defaultSnapshotname = "Sequencer and UEV Template"
+$DefaultVMXPath = "D:\Win10x64 1607\Windows 10 x64 1607.vmx"
 $VMUserName = "Packaging User"
 $VMPassword = "P4ckag!ng"
 $SnapShotName = "MCTNEW"
-$VMXPath = "D:\Windows 7 x86 - Copy\Windows 7 x86\Windows 7 x32.vmx"
+
 [string]$VMRunexe = "${env:ProgramFiles(x86)}\VMware\VMware Workstation\vmrun.exe"
 
 $Runpath = "$env:windir\system32\windowspowershell\v1.0\PowerShell.exe"
@@ -27,14 +27,19 @@ $progparam = '/k dir C:\'
 
 
 $program1 = "-executionpolicy bypass -file 'C:\packages\vmscript.ps1'"
-$program = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`" -executionpolicy bypass -file `"C:\packages\vmscript.ps1`""
+$program1 = '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -file "C:\packages\vmscript.ps1"'
 
 
-$Powershell = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`""
-$program1 = "-executionpolicy bypass -file `"C:\packages\vmscript.ps1`""
+$Program = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`""
+$program1 = '-executionpolicy bypass -file "C:\packages\vmscript.ps1"'
 
-$progparam = "$String $program1"
+Invoke-VMProgram -ProgramtoRun '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -executionpolicy bypass -file "C:\packages\vmscript.ps1"'
+Invoke-VMProgram -ProgramtoRun '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"' -file 'C:\packages\vmscript.ps1'
 
 
-Invoke-VMCommandBasic -ProgramtoRun '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -executionpolicy bypass -file "C:\packages\vmscript.ps1"'
+<# Working
+$program1 = '"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -file "C:\packages\vmscript.ps1"'
+$Program = "`"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`""
 
+Invoke-VMProgram -ProgramtoRun $program -ProgramtoRunParams $program1
+#>

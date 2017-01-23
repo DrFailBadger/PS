@@ -1,6 +1,6 @@
-﻿$DefaultVMXPath = 'D:\Windows 7 x64\Windows 7 x64\Windows 7 x64.vmx'
-$DefaultVMUserName = 'Packaging'
-$DefaultVMPassword = 'P4ckag1ng'
+﻿#$DefaultVMXPath = 'D:\Windows 7 x64\Windows 7 x64\Windows 7 x64.vmx'
+#$DefaultVMUserName = 'Packaging'
+#$DefaultVMPassword = 'P4ckag1ng'
 
 Function Start-VMSnapshots{
     [CmdletBinding()]
@@ -179,80 +179,6 @@ Function Get-VMs {
 
 }
 
-Function Invoke-VMCommand {
-    [CmdletBinding()]
-    Param(       
-                      
-        [Parameter(Mandatory=$True,
-                   ValueFromPipeline=$True,
-                   ValueFromPipelineByPropertyName=$True,
-                   HelpMessage = "Location of Running VM VMX file")]
-        [ValidateScript({(Test-Path $_) -and ((Get-Item $_).Extension -eq ".vmx")})] 
-        [Alias('Path')]
-        [String]$VMXpath,
-
-        [Parameter(Mandatory=$False,
-                   HelpMessage = "User Name for Target VMX")]
-        [String]$VMUserName = $DefaultVMUserName,
-
-        [Parameter(Mandatory=$False,
-                   HelpMessage = "Password for Target VMX")]
-        [String]$VMPassword = $DefaultVMPassword,
-
-        [Parameter(Mandatory=$False,
-                   HelpMessage = "Powershell command")]
-        [String]$Command,
-
-        [Parameter(Mandatory=$False,
-                   HelpMessage = "Powershell command")]
-        [ValidateSet('PowerShell','CMD')] 
-        [String]$CommandType = "PowerShell",
-
-        [Parameter(Mandatory=$False,
-                   HelpMessage = "Powershell command")]
-        [String]$PSReturnVariable = '$Return'
-    
-    )
-
-    <#
-    Run a powershell/CMD command on a VM.
-    note cmd commands require /C at the beginning e.g.
-    /C Notepad.exe
-    will load notepad
-    Get-RunningVMs| Invoke-VMCommand -Command 'notepad.exe'
-    Powershell commands will return variables set as the -PSReturnVariable '$Variableyouwantreturning'
-    Powershell return requires Z: drive to be mapped in the virtual machine
-    #>
-    Begin{
-        If($VMUserName -eq ""){
-            Write-Error '-VMUserName or $DefaultVMUserName must be Set' -ErrorAction Stop
-            $HostPath = $ENV:Temp.Replace(":","")
-        }
-        If($VMPassword -eq ""){
-            Write-Error '-VMPassword or $DefaultVMPassword must be Set' -ErrorAction Stop
-        }
-
-        
-        switch -wildcard ($CommandType) 
-            {           
-                "PowerShell" {$Runpath = "$env:windir\system32\windowspowershell\v1.0\PowerShell.exe"
-                $Command = "{$PSReturnVariable = ''
-                $Command
-                IF($PSReturnVariable -ne ''){$PSReturnVariable|Export-Clixml 'Z:\$HostPath\Return.XML'}
-                start-sleep 5
-                }"
-                } 
-                "CMD" {$Runpath = "CMD.exe"} 
-                }
-            }
-    Process{
-           & "${env:ProgramFiles(x86)}\VMware\VMware VIX\vmrun.exe" -gu "$VMUserName" -gp "$VMPassword" runProgramInGuest "$VMXpath" -interactive -activewindow "$Runpath" "$Command"
-    }
-    END{
-        return Import-Clixml "$ENV:Temp\Return.XML"
-            Del "$ENV:Temp\Return.csv"
-    }
-}
 
 Function Get-RunningVMs {
 
@@ -595,4 +521,4 @@ Function Enable-VMSharedFolder{
     END{}
 }
 
-Export-ModuleMember -Variable DefaultVMXPath, DefaultVMPassword, DefaultVMUsername -Function *
+#Export-ModuleMember -Variable DefaultVMXPath, DefaultVMPassword, DefaultVMUsername -Function *
