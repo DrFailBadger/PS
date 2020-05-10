@@ -1,5 +1,4 @@
 
-
 function Write-Log
 {
     [CmdletBinding()]
@@ -58,24 +57,21 @@ function Write-Log
 
 
 function Get-AllShortcuts{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$false)]
+        [string]$FilterName
+    )
     $CommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
     $CommonAppDataPrograms = [Environment]::GetFolderPath('StartMenu') + "\Programs"
 
-    [Array]$AllShortcuts += Get-ChildItem $CommonPrograms -File -Recurse
-    [Array]$AllShortcuts += Get-ChildItem $CommonAppDataPrograms -File -Recurse
-    
-    switch ($XMLSelected) {
-        Test1        { $XMLimport = $ConfigPath + "Shortcuts_Test1.xml"     }
-        Packaging    { $XMLimport = $ConfigPath + "Shortcuts_Packaging.xml" }
-        Sequencer    { $XMLimport = $ConfigPath + "Shortcuts_Sequencer.xml" }
-        Custom       { $XMLimport = $ConfigPath + "Shortcuts_Custom.xml"    }
-        #Default      { Shortcuts_Test1.xml}
-    }
-
+    [Array]$AllShortcuts += Get-ChildItem -filter $FilterName $CommonPrograms -File -Recurse
+    [Array]$AllShortcuts += Get-ChildItem -filter $FilterName $CommonAppDataPrograms -File -Recurse
+    $AllShortcuts
 }
 
 
-Get-ChildItem -Filter ""
 function Get-ShortcutDetails ($shortcut) {
     $sh = New-Object -ComObject WScript.Shell
     foreach ($lnk in $Shortcut) {
@@ -97,8 +93,7 @@ function Get-ShortcutDetails ($shortcut) {
 
         }
         $Props
-    }
-           
+    }         
 }
 
 function Get-BaseXML {
@@ -108,16 +103,16 @@ function Get-BaseXML {
         ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true,
         HelpMessage='Select Which XML base to use')]
-        [ValidateSet('Test1','Packaging','Seqencer','Custom')]
+        [ValidateSet('Test1','Packaging','Sequencer','Custom')]
         [String]$XMLSelected =  'Custom',
 
-        [Parameter(Mandatory=$true)]
-        [String]$ConfigPath = "$PSScriptRoot\Config"
+        [Parameter(Mandatory=$false)]
+        [String]$ConfigPath = "$PSScriptRoot\Config\",
+        [String]$Output = "$PSScriptRoot\output\"
     )
     
     begin {
-        
-        
+        [Array]$1 = $null
         #Check Config Folder Exists
         IF(!(Test-Path $ConfigPath)){
             try {
@@ -127,6 +122,18 @@ function Get-BaseXML {
             catch {
                 $errorall += $x
                 Write-Log "Creating $configPath was Unsuccessful" -Level Error
+                Write-Log "PowerShell Error[$($_.exception.message)]"  -Level Error  
+            } 
+        } 
+        #Check Output Folder Exists
+        IF(!(Test-Path $Output)){
+            try {
+                New-Item -ItemType Folder -Path $Output -Force -ErrorAction Stop -ErrorVariable X
+                Write-Log "Creating $Output was Successful"
+            }
+            catch {
+                $errorall += $x
+                Write-Log "Creating $Output was Unsuccessful" -Level Error
                 Write-Log "PowerShell Error[$($_.exception.message)]"  -Level Error  
             } 
         } 
@@ -143,6 +150,7 @@ function Get-BaseXML {
     process {
         IF(!(Test-Path $XMLimport)){
             try {
+                [Array]$AllShortcuts = Get-AllShortcuts
                 $AllShortcuts| Export-Clixml $XMLimport
                 Write-Log "Creating $XMLImport as base was Successful, Rerun tool once application is installed"
                 #Popup Saying Base XML created
@@ -155,63 +163,39 @@ function Get-BaseXML {
             }
                     
         }Else{
+            [Array]$AllShortcuts = Get-AllShortcuts
+            $XMLimport = "C:\ShortcutDetails\Config\Shortcuts_Packaging.xml"
             $BaseLine = Import-Clixml $XMLimport
             $compared = Compare-Object -ReferenceObject $BaseLine -DifferenceObject $AllShortcuts -Property Name
-
+            
+            foreach ($NewShortcut in $compared) {
+                #[Array]$1 = $null
+                if ($NewShortcut.SideIndicator -eq "=>") {
+                    $SCName = $NewShortcut.Name
+                    $NewShortcuts = Get-AllShortcuts -FilterName $SCName
+                    $1 += Get-ShortcutDetails -shortcut $NewShortcuts   
+                    $1 += ""
+                }
+                
+            }
+            $1 | Out-File -FilePath $Output\$XMLSelected`_Shortcut_details.txt -Force
         }
-    }
-    
-    end {
-        
-    }
-}
-
-$compared = Import-Clixml  
-$AllShortcuts =Get-AllShortcuts
-$AllShortcuts | export-clixml C:\ShortcutDetails\Config\Shortcuts_Packaging.xml
-$1 = import-clixml C:\ShortcutDetails\Config\Shortcuts_Packaging.xml
-$Compared = Compare-Object -ReferenceObject $1 $AllShortcuts -Property Name
-foreach ($NewShortcut in $compared[2]) {
-    if ($NewShortcut.SideIndicator -eq "=>") {
-        $SCName = $NewShortcut.Name
+    }end{
 
     }
-   
-
-$CommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
-$CommonAppDataPrograms = [Environment]::GetFolderPath('StartMenu') + "\Programs"
-[Array]$AllShortcuts += Get-ChildItem $CommonPrograms -File -Recurse
-[Array]$AllShortcuts += Get-ChildItem $CommonAppDataPrograms -File -Recurse
-$AllShortcuts | Where-Object {$_.name -eq $($comp.name)}
-Get-ChildItem -Filter "$compared.name" -Path $CommonPrograms
-$Compared.name
-
-foreach ($Comp in $compared) {
-    $NewShortcut = @()
-    $NewShortcut += Get-ChildItem -Filter $($Comp.name) -Path $CommonPrograms -File -Recurse
-    $NewShortcut += Get-ChildItem -Filter $($Comp.name) -Path $CommonAppDataPrograms -File -Recurse
-
 }
-    
-}
-
-
 $ShorcutDetailsLog = "C:\ShortcutDetails\log\Get-ShortcutsDetails.log"
-$AllShortcuts[0] = Get-AllShortcuts
-$ConfigPath = "C:\ShortcutDetails\config\"
 
-$ShortcutOut = Get-AllShortcuts
+Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Packaging
+Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Test1
+ 
+Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Sequencer 
 
-$shortcut =$ShortcutOut
+Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Custom
+ 
 
 
-$compared
-Get-ShortcutDetails -shortcut $ShortcutOut
-$outputloc = "C:\ShortcutDetails\output"
-$outputloc = "$PSScriptRoot\output"
-$the = $ShortcutOut | get-shortcutdetails 
-if (!(Test-Path $outputloc)) {
-    New-Item -Path $outputloc -ItemType Directory -Force
-}
-$the | out-file "C:\ShortcutDetails\Output\Shortcut-details.txt" -Force
-Pause
+ 
+
+
+
