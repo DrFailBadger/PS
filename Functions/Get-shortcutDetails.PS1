@@ -6,11 +6,11 @@ param (
     HelpMessage='Select Which XML base to use')]
     [ValidateSet('Test1','Packaging','Sequencer','Custom')]
     [String]$XMLSelected =  'Custom',
-    [String]$Configpath = "$PSScriptRoot\config",
-    [String]$Output = "$PSScriptRoot\output"
+    [String]$Configpath = "$scriptRoot\config",
+    [String]$Output = "$scriptRoot\output"
 )
-
-$ShorcutDetailsLog = "$PSScriptRoot\log\Get-ShortcutsDetails.log"
+$scriptRoot = $PSScriptRoot
+$ShorcutDetailsLog = "$scriptRoot\log\Get-ShortcutsDetails.log"
 function Write-Log
 {
     [CmdletBinding()]
@@ -119,8 +119,8 @@ function Get-BaseXML {
         [String]$XMLSelected =  'Custom',
 
         [Parameter(Mandatory=$false)]
-        [String]$ConfigPath = "$PSScriptRoot\Config\",
-        [String]$Output = "$PSScriptRoot\output\"
+        [String]$ConfigPath = "$scriptRoot\Config\",
+        [String]$Output = "$scriptRoot\output\"
     )
     
     begin {
@@ -176,7 +176,7 @@ function Get-BaseXML {
                     
         }Else{
             [Array]$AllShortcuts = Get-AllShortcuts
-            $XMLimport = "C:\ShortcutDetails\Config\Shortcuts_Packaging.xml"
+            #$XMLimport = "C:\ShortcutDetails\Config\Shortcuts_Packaging.xml"
             $BaseLine = Import-Clixml $XMLimport
             $compared = Compare-Object -ReferenceObject $BaseLine -DifferenceObject $AllShortcuts -Property Name
             
