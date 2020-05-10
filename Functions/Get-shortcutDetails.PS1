@@ -5,11 +5,13 @@ param (
     ValueFromPipelineByPropertyName=$true,
     HelpMessage='Select Which XML base to use')]
     [ValidateSet('Test1','Packaging','Sequencer','Custom')]
-    [String]$XMLSelected =  'Custom',
-    [String]$Configpath = "$scriptRoot\config",
-    [String]$Output = "$scriptRoot\output"
+    [String]$XMLSelected =  $XMLSelected
+
 )
+#$scriptRoot = "C:\Shortcuts"
 $scriptRoot = $PSScriptRoot
+[String]$SCript:Configpath = "$scriptRoot\config"
+[String]$Script:Output = "$scriptRoot\outputs"
 $ShorcutDetailsLog = "$scriptRoot\log\Get-ShortcutsDetails.log"
 function Write-Log
 {
@@ -63,11 +65,6 @@ function Write-Log
     }
     End{}
 }
-
-#Variables
-#$ShorcutDetailsLog = "$PSScriptRoot\log\Get-ShortcutsDetails.log"
-
-
 function Get-AllShortcuts{
     [CmdletBinding()]
     Param
@@ -82,7 +79,6 @@ function Get-AllShortcuts{
     [Array]$AllShortcuts += Get-ChildItem -filter $FilterName $CommonAppDataPrograms -File -Recurse
     $AllShortcuts
 }
-
 
 function Get-ShortcutDetails ($shortcut) {
     $sh = New-Object -ComObject WScript.Shell
@@ -119,16 +115,17 @@ function Get-BaseXML {
         [String]$XMLSelected =  'Custom',
 
         [Parameter(Mandatory=$false)]
-        [String]$ConfigPath = "$scriptRoot\Config\",
-        [String]$Output = "$scriptRoot\output\"
+        [String]$ConfigPath =$ConfigPath,
+        [String]$Output = $Output
     )
     
     begin {
         [Array]$1 = $null
+
         #Check Config Folder Exists
         IF(!(Test-Path $ConfigPath)){
             try {
-                New-Item -ItemType Folder -Path $ConfigPath -Force -ErrorAction Stop -ErrorVariable X
+                New-Item -ItemType Directory -Path $ConfigPath -Force -ErrorAction Stop -ErrorVariable X
                 Write-Log "Creating $configPath was Successful"
             }
             catch {
@@ -140,7 +137,7 @@ function Get-BaseXML {
         #Check Output Folder Exists
         IF(!(Test-Path $Output)){
             try {
-                New-Item -ItemType Folder -Path $Output -Force -ErrorAction Stop -ErrorVariable X
+                New-Item -ItemType Directory -Path $Output -Force -ErrorAction Stop -ErrorVariable X
                 Write-Log "Creating $Output was Successful"
             }
             catch {
@@ -151,10 +148,10 @@ function Get-BaseXML {
         } 
         #XML Switch
         switch ($XMLSelected) {
-            Test1        { $XMLimport = $ConfigPath + "Shortcuts_Test1.xml"     }
-            Packaging    { $XMLimport = $ConfigPath + "Shortcuts_Packaging.xml" }
-            Sequencer    { $XMLimport = $ConfigPath + "Shortcuts_Sequencer.xml" }
-            Custom       { $XMLimport = $ConfigPath + "Shortcuts_Custom.xml"    }
+            Test1        { $XMLimport = $ConfigPath + "\Shortcuts_Test1.xml"     }
+            Packaging    { $XMLimport = $ConfigPath + "\Shortcuts_Packaging.xml" }
+            Sequencer    { $XMLimport = $ConfigPath + "\Shortcuts_Sequencer.xml" }
+            Custom       { $XMLimport = $ConfigPath + "\Shortcuts_Custom.xml"    }
             #Default      { Shortcuts_Test1.xml}
         }
     }
@@ -198,9 +195,7 @@ function Get-BaseXML {
 }
 
 
-Get-BaseXML -ConfigPath $Configpath -Output $Output -XMLSelected $XMLSelected
-
- 
+Get-BaseXML -XMLSelected $XMLSelected
 
 
  
