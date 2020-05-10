@@ -1,4 +1,16 @@
+[CmdletBinding()]
+param (
+    [Parameter(Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,
+    HelpMessage='Select Which XML base to use')]
+    [ValidateSet('Test1','Packaging','Sequencer','Custom')]
+    [String]$XMLSelected =  'Custom',
+    [String]$Configpath = "$PSScriptRoot\config",
+    [String]$Output = "$PSScriptRoot\output"
+)
 
+$ShorcutDetailsLog = "$PSScriptRoot\log\Get-ShortcutsDetails.log"
 function Write-Log
 {
     [CmdletBinding()]
@@ -184,14 +196,10 @@ function Get-BaseXML {
 
     }
 }
-$ShorcutDetailsLog = "C:\ShortcutDetails\log\Get-ShortcutsDetails.log"
 
-Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Packaging
-Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Test1
- 
-Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Sequencer 
 
-Get-BaseXML -ConfigPath "C:\ShortcutDetails\Config\" -Output "C:\ShortcutDetails\output\" -XMLSelected Custom
+Get-BaseXML -ConfigPath $Configpath -Output $Output -XMLSelected $XMLSelected
+
  
 
 
