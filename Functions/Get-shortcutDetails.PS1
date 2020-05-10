@@ -58,16 +58,47 @@ function Write-Log
 
 
 function Get-AllShortcuts{
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory=$false)]
-        [string]$Filter
-    )
     $CommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
     $CommonAppDataPrograms = [Environment]::GetFolderPath('StartMenu') + "\Programs"
-    [Array]$AllShortcuts += Get-ChildItem -filter $filter -path $CommonPrograms -File -Recurse
-    [Array]$AllShortcuts += Get-ChildItem -filter $Filter -Path $CommonAppDataPrograms -File -Recurse
-    $AllShortcuts
+
+    [Array]$AllShortcuts += Get-ChildItem $CommonPrograms -File -Recurse
+    [Array]$AllShortcuts += Get-ChildItem $CommonAppDataPrograms -File -Recurse
+    
+    switch ($XMLSelected) {
+        Test1        { $XMLimport = $ConfigPath + "Shortcuts_Test1.xml"     }
+        Packaging    { $XMLimport = $ConfigPath + "Shortcuts_Packaging.xml" }
+        Sequencer    { $XMLimport = $ConfigPath + "Shortcuts_Sequencer.xml" }
+        Custom       { $XMLimport = $ConfigPath + "Shortcuts_Custom.xml"    }
+        #Default      { Shortcuts_Test1.xml}
+    }
+
+}
+
+
+Get-ChildItem -Filter ""
+function Get-ShortcutDetails ($shortcut) {
+    $sh = New-Object -ComObject WScript.Shell
+    foreach ($lnk in $Shortcut) {
+        $lnk1 = $sh.CreateShortcut($lnk.FullName) 
+        if ($lnk1.IconLocation -eq ",0") {
+            $IconLocation = $lnk1.TargetPath + $lnk1.IconLocation
+        }Else{
+            $IconLocation = $lnk1.IconLocation
+        }
+        $Props = [Ordered]@{
+            Name                =   $lnk.BaseName
+            'StartMenu Location'=   $Lnk.DirectoryName
+            'Full Path'         =   $lnk1.FullName
+            'Target Path'       =   $lnk1.TargetPath
+            Arguments           =   $lnk1.Arguments
+            'Working Directory' =   $lnk1.WorkingDirectory
+            'Icon Location'     =   $IconLocation
+            Description         =   $lnk1.Description
+
+        }
+        $Props
+    }
+           
 }
 
 function Get-BaseXML {
@@ -136,17 +167,35 @@ function Get-BaseXML {
 }
 
 $compared = Import-Clixml  
-$Compared = Compare-Object -ReferenceObject C:\ShortcutDetails\Config\Shortcuts_Packaging.xml $AllShortcuts -Property Name
+$AllShortcuts =Get-AllShortcuts
+$AllShortcuts | export-clixml C:\ShortcutDetails\Config\Shortcuts_Packaging.xml
+$1 = import-clixml C:\ShortcutDetails\Config\Shortcuts_Packaging.xml
+$Compared = Compare-Object -ReferenceObject $1 $AllShortcuts -Property Name
 foreach ($NewShortcut in $compared[2]) {
     if ($NewShortcut.SideIndicator -eq "=>") {
         $SCName = $NewShortcut.Name
 
     }
+   
+
+$CommonPrograms = [Environment]::GetFolderPath('CommonPrograms')
+$CommonAppDataPrograms = [Environment]::GetFolderPath('StartMenu') + "\Programs"
+[Array]$AllShortcuts += Get-ChildItem $CommonPrograms -File -Recurse
+[Array]$AllShortcuts += Get-ChildItem $CommonAppDataPrograms -File -Recurse
+$AllShortcuts | Where-Object {$_.name -eq $($comp.name)}
+Get-ChildItem -Filter "$compared.name" -Path $CommonPrograms
+$Compared.name
+
+foreach ($Comp in $compared) {
+    $NewShortcut = @()
+    $NewShortcut += Get-ChildItem -Filter $($Comp.name) -Path $CommonPrograms -File -Recurse
+    $NewShortcut += Get-ChildItem -Filter $($Comp.name) -Path $CommonAppDataPrograms -File -Recurse
+
+}
     
+}
 
 
-
-$compared | gm
 $ShorcutDetailsLog = "C:\ShortcutDetails\log\Get-ShortcutsDetails.log"
 $AllShortcuts[0] = Get-AllShortcuts
 $ConfigPath = "C:\ShortcutDetails\config\"
@@ -155,31 +204,6 @@ $ShortcutOut = Get-AllShortcuts
 
 $shortcut =$ShortcutOut
 
-function Get-ShortcutDetails ($shortcut) {
-    $sh = New-Object -ComObject WScript.Shell
-    foreach ($lnk in $Shortcut) {
-        $lnk1 = $sh.CreateShortcut($lnk.FullName) 
-        if ($lnk1.IconLocation -eq ",0") {
-            $IconLocation = $lnk1.TargetPath + $lnk1.IconLocation
-        }Else{
-            $IconLocation = $lnk1.IconLocation
-        }
-        $Props = [Ordered]@{
-            'New Shortcut'      =   ""
-            Name                =   $lnk.BaseName
-            'StartMenu Location'=   $Lnk.DirectoryName
-            'Full Path'         =   $lnk1.FullName
-            'Target Path'       =   $lnk1.TargetPath
-            Arguments           =   $lnk1.Arguments
-            'Working Directory' =   $lnk1.WorkingDirectory
-            'Icon Location'     =   $IconLocation
-            Description         =   $lnk1.Description
-
-        }
-        $Props
-    }
-           
-}
 
 $compared
 Get-ShortcutDetails -shortcut $ShortcutOut
